@@ -19,9 +19,17 @@ def read_mh_z19():
     cmd = "sudo python3 %s" % script
     j = subprocess.check_output(cmd, shell=True)
     if j == b'null\n':
+      print("Warning: MH-Z19 returned null data")
       return {'co2': 0}
     return json.loads(j)
-  except:
+  except subprocess.CalledProcessError as e:
+    print(f"Error running MH-Z19 script: {e}")
+    return {'co2': 0}
+  except json.JSONDecodeError as e:
+    print(f"Error parsing MH-Z19 JSON: {e}")
+    return {'co2': 0}
+  except Exception as e:
+    print(f"Unexpected error reading MH-Z19: {e}")
     return {'co2': 0}
 
 def read_lls05():
