@@ -3,7 +3,7 @@ import mcp3208
 import amq1602xa
 import spreadsheet
 import mh_z19
-import sys, random, os, json
+import sys
 from datetime import datetime, timedelta, timezone
 JST = timezone(timedelta(hours=+9), 'JST')
 

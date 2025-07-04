@@ -1,5 +1,4 @@
 import httplib2
-import numpy as np
 
 from apiclient import discovery
 from oauth2client.service_account import ServiceAccountCredentials
