@@ -1,24 +1,27 @@
 import serial
-import subprocess
 import json
 import time
 import logging
 
 class MH_Z19(object):
-  def __init__(self, serial_port='serial0', max_retries=3, retry_delay=1.0):
+  def __init__(self, serial_port='ttyAMA0', max_retries=3, retry_delay=1.0):
     self.serial_port = serial_port
     self.serial_device = '/dev/%s' % serial_port
     self.max_retries = max_retries
     self.retry_delay = retry_delay
     self.logger = logging.getLogger(__name__)
 
-  def stop_getty(self):
-    cmd = 'sudo systemctl stop serial-getty@%s.service' % self.serial_port
-    subprocess.call(cmd, stdout=subprocess.PIPE, shell=True)
-
-  def start_getty(self):
-    cmd = 'sudo systemctl start serial-getty@%s.service' % self.serial_port
-    subprocess.call(cmd, stdout=subprocess.PIPE, shell=True)
+  def _check_serial_access(self):
+    """Check if serial port is accessible"""
+    try:
+      import os
+      if not os.path.exists(self.serial_device):
+        self.logger.error(f"Serial device {self.serial_device} does not exist")
+        return False
+      return True
+    except Exception as e:
+      self.logger.error(f"Error checking serial access: {e}")
+      return False
 
   def connect_serial(self):
     return serial.Serial(self.serial_device,
@@ -29,18 +32,19 @@ class MH_Z19(object):
                           timeout=1.0)
 
   def readData(self):
+    if not self._check_serial_access():
+      self.logger.error("Serial port not accessible. Check UART configuration.")
+      return None
+
     for attempt in range(self.max_retries):
       try:
-        self.stop_getty()
         res = self.readSensor()
-        self.start_getty()
         if res and 'co2' in res:
           return res
         else:
           self.logger.warning(f"Attempt {attempt + 1}: Invalid data received")
       except Exception as e:
         self.logger.error(f"Attempt {attempt + 1}: Error reading sensor: {e}")
-        self.start_getty()
 
       if attempt < self.max_retries - 1:
         time.sleep(self.retry_delay)

@@ -2,7 +2,8 @@ import bme280
 import mcp3208
 import amq1602xa
 import spreadsheet
-import sys, random, os, subprocess, json
+import mh_z19
+import sys, random, os, json
 from datetime import datetime, timedelta, timezone
 JST = timezone(timedelta(hours=+9), 'JST')
 
@@ -15,21 +16,14 @@ def read_bme280():
 
 def read_mh_z19():
   try:
-    script = '%s/mh_z19.py' % os.path.dirname(os.path.abspath(__file__))
-    cmd = "sudo python3 %s" % script
-    j = subprocess.check_output(cmd, shell=True)
-    if j == b'null\n':
+    sensor = mh_z19.MH_Z19()
+    data = sensor.readData()
+    if data is None:
       print("Warning: MH-Z19 returned null data")
       return {'co2': 0}
-    return json.loads(j)
-  except subprocess.CalledProcessError as e:
-    print(f"Error running MH-Z19 script: {e}")
-    return {'co2': 0}
-  except json.JSONDecodeError as e:
-    print(f"Error parsing MH-Z19 JSON: {e}")
-    return {'co2': 0}
+    return data
   except Exception as e:
-    print(f"Unexpected error reading MH-Z19: {e}")
+    print(f"Error reading MH-Z19: {e}")
     return {'co2': 0}
 
 def read_lls05():

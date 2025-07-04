@@ -66,7 +66,56 @@ Data format: timestamp, temperature, humidity, pressure, CO2, light_level
 - BME280: I2C address 0x76
 - LCD: I2C address 0x3e
 - MCP3208: SPI pins (CLK=11, MOSI=10, MISO=9, CS=8)
-- MH-Z19: Serial port /dev/serial0
+- MH-Z19: Serial port /dev/ttyAMA0
+
+## UART Configuration for MH-Z19
+
+To use MH-Z19 without sudo privileges, configure GPIO UART:
+
+### Required System Configuration
+
+1. **Edit /boot/config.txt:**
+   ```
+   enable_uart=1
+   dtoverlay=disable-bt
+   ```
+
+2. **Edit /boot/cmdline.txt:**
+   Remove `console=serial0,115200` (keep `console=tty1`)
+
+3. **Disable services:**
+   ```bash
+   sudo systemctl stop serial-getty@serial0.service
+   sudo systemctl disable serial-getty@serial0.service
+   sudo systemctl mask serial-getty@serial0.service
+   sudo systemctl disable serial-getty@ttyAMA0.service
+   sudo systemctl disable hciuart.service
+   ```
+
+4. **Create udev rule for proper permissions:**
+   ```bash
+   sudo nano /etc/udev/rules.d/10-serial.rules
+   ```
+   Add the following line:
+   ```
+   SUBSYSTEM=="tty", KERNEL=="ttyAMA0", GROUP="dialout", MODE="0664"
+   ```
+
+5. **Add user to dialout group:**
+   ```bash
+   sudo usermod -a -G dialout $USER
+   ```
+
+6. **Apply udev rules:**
+   ```bash
+   sudo udevadm control --reload-rules
+   sudo udevadm trigger
+   ```
+
+7. **Reboot system** for all changes to take effect
+
+### Note
+This configuration disables Bluetooth and serial console login to dedicate /dev/ttyAMA0 to MH-Z19 sensor.
 
 ## Coding Rules
 
