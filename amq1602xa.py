@@ -14,25 +14,69 @@ class AMQ1602XA(object):
     self.display_chars = self.chars_per_line * self.display_lines
     self.bus = smbus.SMBus(1)
 
+    sleep(0.5)
+    self._initialize_display(contrast)
+
+  def _initialize_display(self, contrast):
     trials = 5
     for i in range(trials):
       try:
+        sleep(0.1)
+        self.bus.write_i2c_block_data(
+          self.address,
+          self.register_setting,
+          [0x38])
+        sleep(0.01)
+        self.bus.write_i2c_block_data(
+          self.address,
+          self.register_setting,
+          [0x39])
+        sleep(0.01)
+        self.bus.write_i2c_block_data(
+          self.address,
+          self.register_setting,
+          [0x14])
+        sleep(0.01)
+        
         c_lower = (contrast & 0xf)
         c_upper = (contrast & 0x30) >> 4
         self.bus.write_i2c_block_data(
           self.address,
           self.register_setting,
-          [0x38, 0x39, 0x14, 0x70|c_lower, 0x54|c_upper, 0x6c])
-        sleep(0.2)
+          [0x70|c_lower])
+        sleep(0.01)
         self.bus.write_i2c_block_data(
           self.address,
           self.register_setting,
-          [0x38, 0x01, 0x0d])
-        sleep(0.001)
+          [0x54|c_upper])
+        sleep(0.01)
+        self.bus.write_i2c_block_data(
+          self.address,
+          self.register_setting,
+          [0x6c])
+        sleep(0.3)
+        
+        self.bus.write_i2c_block_data(
+          self.address,
+          self.register_setting,
+          [0x38])
+        sleep(0.01)
+        self.bus.write_i2c_block_data(
+          self.address,
+          self.register_setting,
+          [0x01])
+        sleep(0.01)
+        self.bus.write_i2c_block_data(
+          self.address,
+          self.register_setting,
+          [0x0c])
+        sleep(0.01)
+        
         break
-      except IOError:
+      except IOError as e:
         if i == trials - 1:
-          sys.exit()
+          raise IOError(f"Failed to initialize LCD after {trials} attempts: {e}")
+        sleep(0.1)
 
   def clear(self):
     self.position = 0
@@ -41,21 +85,21 @@ class AMQ1602XA(object):
       self.address,
       self.register_setting,
       [0x01])
-    sleep(0.001)
+    sleep(0.01)
 
   def power_off(self):
     self.bus.write_i2c_block_data(
       self.address,
       self.register_setting,
       [0x08])
-    sleep(0.001)
+    sleep(0.01)
 
   def power_on(self):
     self.bus.write_i2c_block_data(
       self.address,
       self.register_setting,
       [0x0c])
-    sleep(0.001)
+    sleep(0.01)
 
   def newline(self):
     if self.line == self.display_lines - 1:
@@ -67,7 +111,7 @@ class AMQ1602XA(object):
       self.address,
       self.register_setting,
       [0xc0])
-    sleep(0.001)
+    sleep(0.01)
 
   def write_string(self, s):
     for c in list(s):
@@ -83,6 +127,7 @@ class AMQ1602XA(object):
       self.address,
       self.register_display,
       [byte_data])
+    sleep(0.001)
     self.position += 1
 
   def check_writable(self, c):
