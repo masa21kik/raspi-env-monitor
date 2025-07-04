@@ -41,10 +41,10 @@ class MH_Z19(object):
       except Exception as e:
         self.logger.error(f"Attempt {attempt + 1}: Error reading sensor: {e}")
         self.start_getty()
-      
+
       if attempt < self.max_retries - 1:
         time.sleep(self.retry_delay)
-    
+
     self.logger.error("Failed to read sensor after all retries")
     return None
 
@@ -53,13 +53,13 @@ class MH_Z19(object):
     try:
       ser = self.connect_serial()
       time.sleep(0.1)
-      
+
       for attempt in range(3):
         ser.reset_input_buffer()
         ser.write(b"\xff\x01\x86\x00\x00\x00\x00\x00\x79")
         time.sleep(0.1)
         s = ser.read(9)
-        
+
         if len(s) == 9 and s[0] == 0xff and s[1] == 0x86:
           checksum = 0xff - (sum(s[1:8]) & 0xff) + 1
           if s[8] == (checksum & 0xff):
@@ -74,10 +74,10 @@ class MH_Z19(object):
             self.logger.warning(f"Checksum mismatch on attempt {attempt + 1}")
         else:
           self.logger.warning(f"Invalid response length or header on attempt {attempt + 1}: {len(s)} bytes")
-        
+
         if attempt < 2:
           time.sleep(0.5)
-      
+
       return None
     finally:
       if ser:
