@@ -68,6 +68,13 @@ Data format: timestamp, temperature, humidity, pressure, CO2, light_level
 - MCP3208: SPI pins (CLK=11, MOSI=10, MISO=9, CS=8)
 - MH-Z19: Serial port /dev/serial0
 
+## Coding Rules
+
+- **No spaces in blank lines**: Empty lines must contain no spaces or tabs
+- Follow existing code style and indentation patterns
+- Use meaningful variable names and comments where necessary
+- Handle errors gracefully with proper exception handling
+
 ## Common Issues
 
 - MH-Z19 sensor requires stopping/starting Getty service for serial access
