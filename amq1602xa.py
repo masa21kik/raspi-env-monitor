@@ -1,4 +1,4 @@
-import smbus
+import smbus2
 import sys
 from time import sleep
 
@@ -12,7 +12,7 @@ class AMQ1602XA(object):
     self.chars_per_line = 16
     self.display_lines = 2
     self.display_chars = self.chars_per_line * self.display_lines
-    self.bus = smbus.SMBus(1)
+    self.bus = smbus2.SMBus(1)
 
     sleep(0.5)
     self._initialize_display(contrast)
