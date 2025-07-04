@@ -40,8 +40,17 @@ cd raspi-env-monitor
 ```
 
 ### 2. Install Dependencies
+
+**Option A: System-wide installation**
 ```bash
 pip3 install -r requirements.txt
+```
+
+**Option B: Using virtual environment (recommended)**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ### 3. System Configuration
@@ -98,6 +107,15 @@ sudo reboot
 ## Usage
 
 ### Run the Environmental Monitor
+
+**If using virtual environment:**
+```bash
+source venv/bin/activate
+python3 env_monitor.py <google_keyfile.json> <spreadsheet_id>
+deactivate  # When finished
+```
+
+**If using system-wide installation:**
 ```bash
 python3 env_monitor.py <google_keyfile.json> <spreadsheet_id>
 ```
